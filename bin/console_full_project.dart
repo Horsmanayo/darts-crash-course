@@ -1,128 +1,73 @@
-import 'package:console_full_project/console_full_project.dart'
-    as console_full_project;
+// import 'package:console_full_project/console_full_project.dart'
+//     as console_full_project;
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 
-void main() {
-  var name = "usman";
-  const isPresent = true;
-  final age = 26;
-  print("Hello, $name and your age is $age and isPresent is $isPresent");
+void main() async {
+  // var post = await fetchPost();
+  // print(post.data);
 
-  String name1 = "horsmanayo";
-  int age1 = 26;
-  double height = 5.4;
-  bool isPresent1 = true;
+  var postTwo = await fetchPostTwo();
 
-  print(
-      "Hello, $name1 and your age is $age1 and isPresent is $isPresent1 and height is $height");
-
-  final greeting = greet(name: name, age: age);
-
-  List<int> numbers = [1, 2, 3, 4, 5];
-
-  numbers.add(6);
-  numbers.add(7);
-  numbers.remove(1);
-  numbers.removeLast();
-  numbers.shuffle();
-
-  Set<String> emails = {"a.com", "b.com", "c.com"};
-
-  emails.add("d.com");
-  emails.add("e.com");
-  emails.add("a.com");
-
-  Map<String, dynamic> planets = {
-    "earth": "blue",
-    "mars": "red",
-    "venus": "yellow",
-    "jupiter": "orange"
-  };
-
-//map are key value pair and they are manipulated using the square brackets as opposed to the dot operator
-  planets["saturn"] = "purple";
-
-  print(planets);
-  print(planets.isEmpty);
-  print(planets.containsKey("earth"));
-  planets.removeWhere((key, value) => key.length > 4);
-
-  print(planets);
-
-  for (var element in numbers.where((element) => element % 2 > 0)) {
-    print(element);
-  }
-
-  print(greeting);
-
-  var menuItem = MenuItem(name: "Burger", price: 5.99);
-  print(menuItem.name);
-
-  menuItem.setName("Pizza");
-
-  print(menuItem.name);
-
-  var pizza = Pizza(name: "Pizza", price: 10.99, toppings: ["cheese", "onion"]);
-
-  print(pizza.toppings);
-  print(pizza.printName());
-
-  var foodCollection = Collection<MenuItem>("Menu Items", [
-    pizza,
-    menuItem,
-  ]);
-
-  print(foodCollection.randomItems());
+  print(postTwo.title);
 }
 
-String greet({String? name, required int age}) {
-  return ("Hello, $name and my age is $age happening inside greet function");
+Future<Post> fetchPost() {
+  const delayed = Duration(seconds: 2);
+  return Future.delayed(delayed, () {
+    return Post({"title": "Hello, World", "content": "This is a post"});
+  });
 }
 
-class MenuItem {
+class Post {
+  Map<String, dynamic> data;
+
+  Post(this.data);
+}
+
+class Person {
   String name;
-  double price;
+  int age;
 
-  MenuItem({required this.name, required this.price});
+  Person(this.name, this.age);
+}
 
-  String printName() {
-    return name;
-  }
+class PostTwo {
+  int userId;
+  int id;
+  String title;
+  String body;
 
-  double printPrice() {
-    return price;
-  }
-
-  void setName(String name) {
-    this.name = name;
-  }
+  PostTwo(this.userId, this.id, this.title, this.body);
 
   @override
   String toString() {
-    return "The name of the menu item is $name and the price is $price";
+    return 'PostTwo{userId: $userId, id: $id, title: $title, body: $body}';
   }
 }
 
-class Pizza extends MenuItem {
-  List<String> toppings = [];
+class PostTwoCollection {
+  List<PostTwo> posts;
 
-  Pizza({required super.name, required super.price, required this.toppings});
+  PostTwoCollection(this.posts);
 
   @override
-  String printName() {
-    return "The name of the pizza is $name";
+  String toString() {
+    return 'PostTwoCollection{posts: $posts}';
   }
 }
 
-//generic class that takes in a type T
-class Collection<T> {
-  String name;
-  List<T> data = [];
+Future<PostTwo> fetchPostTwo() async {
+  var url = Uri.parse('https://jsonplaceholder.typicode.com/posts/1');
+  var response = await http.get(url);
 
-  Collection(this.name, this.data);
+  if (response.statusCode == 200) {
+    var jsonResponse =
+        convert.jsonDecode(response.body) as Map<String, dynamic>;
 
-  randomItems() {
-    data.shuffle();
-
-    return data[0];
+    return PostTwo(jsonResponse['userId'], jsonResponse['id'],
+        jsonResponse['title'], jsonResponse['body']);
+  } else {
+    throw Exception('Failed to load post');
   }
 }
